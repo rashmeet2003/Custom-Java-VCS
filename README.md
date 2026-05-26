@@ -19,7 +19,7 @@ A local, lightweight, Git-inspired version control core engine and DevSecOps das
 1. Compile all source files via terminal:
    javac src/*.java -d .
    
-2.Launch the Desktop Dashboard UI: 
+2. Launch the Desktop Dashboard UI: 
       java VCSGui
    
 3. Scroll to the bottom and click **Commit changes**.
