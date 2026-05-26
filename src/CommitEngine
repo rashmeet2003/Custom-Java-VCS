@@ -1,0 +1,52 @@
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.UUID;
+
+public class CommitEngine {
+    public static void commit(String message) {
+        File index = new File(".mygit/index");
+        
+        // 1. Check if staging area has files
+        if (!index.exists() || index.length() == 0) {
+            System.out.println("Nothing to commit (Staging area is empty).");
+            return;
+        }
+
+        // 2. Generate the unique 8-character hash
+        String commitHash = UUID.randomUUID().toString().substring(0, 8);
+        System.out.println("Generating commit hash: " + commitHash);
+        
+        try (BufferedReader reader = new BufferedReader(new FileReader(index))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                File originalFile = new File(line);
+                if (originalFile.exists()) {
+                    // Create backup snapshot inside .mygit/objects/
+                    File snapshot = new File(".mygit/objects/" + commitHash + "_" + originalFile.getName());
+                    Files.copy(originalFile.toPath(), snapshot.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            //     }
+            // }
+            
+            // 3. Save to global history ledger
+            saveCommitMetadata(commitHash, message);
+            
+            // 4. Clear Staging Area (Empty the shopping cart)
+            PrintWriter writer = new PrintWriter(index);
+            writer.print("");
+            writer.close();
+            
+            // 5. SUCCESS PRINT STATEMENT
+            System.out.println("[" + commitHash + "] Commit successful: " + message);
+            
+        } catch (IOException e) {
+            System.err.println("Commit failed: " + e.getMessage());
+        }
+    }
+
+    private static void saveCommitMetadata(String hash, String message) throws IOException {
+        try (FileWriter fw = new FileWriter(".mygit/HEAD", true)) {
+            fw.write(hash + " - " + message + " - Date: " + System.currentTimeMillis() + "\n");
+        }
+    }
+}
